@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager, rc
 from dotenv import load_dotenv
 import os
-fn_name = font_manager.FontProperties(fname='c:/Windows/Fonts/malgun.ttf').get_name()
-rc('font',family=fn_name)
 
 # 환경 변수에서 DETA_PROJECT_KEY를 로드
 # .env 파일에서 환경 변수 로드
