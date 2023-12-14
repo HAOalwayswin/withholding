@@ -9,8 +9,7 @@ from matplotlib import font_manager, rc
 from dotenv import load_dotenv
 import os
 
-
-DETA_PROJECT_KEY = st.secrets["DETA_PROJECT_KEY"]
+DETA_PROJECT_KEY = os.getenv('DETA_PROJECT_KEY')
 if DETA_PROJECT_KEY is None:
     raise Exception("DETA_PROJECT_KEY 환경 변수가 설정되지 않았습니다.")
 deta = Deta(DETA_PROJECT_KEY)
