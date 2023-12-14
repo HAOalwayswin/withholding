@@ -16,6 +16,7 @@ deta = Deta(DETA_PROJECT_KEY)
 db = deta.Base("count")
 
 # 데이터베이스 CRUD 함수
+# 데이터베이스 CRUD 함수
 def insert_record(data):
     # '지출일자' 키가 있는지 확인하고 문자열로 변환
     if "2.지출일자" in data:
@@ -30,44 +31,19 @@ def insert_record(data):
     # 데이터베이스에 기록 추가
     return db.put(data)
 
-def get_record(key):
-    return db.get(key)
 
-def fetch_records():
-    return db.fetch().items
-
-def update_record(key, updates):
-    return db.update(updates, key)
-
-def delete_record(key):
-    return db.delete(key)
-
-def filter_records(branch, account_title, start_date, end_date):
-    all_records = db.fetch().items
-    filtered_records = [
-        record for record in all_records
-        if record.get("1.지점명") == branch and
-            (account_title == "모든 계정과목" or record.get("3.계정과목") == account_title) and
-            start_date <= datetime.datetime.fromisoformat(record.get("2.지출일자")).date() <= end_date
-    ]
-    return filtered_records
 
 # 지점명 필터링 함수
 def filter_records(branch, account_title, start_date, end_date):
     all_records = db.fetch().items
-    if branch != "모든 지점":
-        filtered_records = [
-            record for record in all_records
-            if record.get("1.지점명") == branch and
-               (account_title == "모든 계정과목" or record.get("3.계정과목") == account_title) and
-               start_date <= datetime.datetime.fromisoformat(record.get("2.지출일자")).date() <= end_date
-        ]
-    else:
-        filtered_records = [
-            record for record in all_records
-            if (account_title == "모든 계정과목" or record.get("3.계정과목") == account_title) and
-               start_date <= datetime.datetime.fromisoformat(record.get("2.지출일자")).date() <= end_date
-        ]
+    
+    # 모든 계정과목을 선택한 경우 또는 특정 계정과목을 선택한 경우를 모두 처리
+    filtered_records = [
+        record for record in all_records
+        if (branch == "모든 지점" or record.get("1.지점명") == branch) and
+           (account_title == "모든 계정과목" or record.get("3.계정과목") == account_title) and
+           start_date <= datetime.datetime.fromisoformat(record.get("2.지출일자")).date() <= end_date
+    ]
     return filtered_records
 
 
@@ -267,16 +243,22 @@ def main():
         st.session_state['end_date_withholding'] = datetime.date.today()
 
     # 폼을 사용한 입력 필드
+    # 폼을 사용한 입력 필드
     with st.form("my_form"):
         start_date = st.date_input("시작 날짜", st.session_state['start_date_withholding'], key="start_date_withholding")
         end_date = st.date_input("종료 날짜", st.session_state['end_date_withholding'], key="end_date_withholding")
-        selected_branch = st.selectbox("지점명 선택", ["모든 지점"] + seoul_districts)  # seoul_districts는 사전에 정의된 지역 목록
+        
+        selected_branch = st.selectbox("지점명 선택", ["모든 지점"] + seoul_districts)
+        
+        # 계정과목 선택 옵션 추가
+        selected_account_title = st.selectbox("계정과목 선택", ["모든 계정과목"] + list(account_titles.keys()))
 
         # '제출' 버튼
         submitted = st.form_submit_button("원천징수 대상자 세액 데이터 불러오기")
 
     if submitted:
-        filtered_records = filter_records(selected_branch, st.session_state['selected_account_title'], start_date, end_date)
+        # 선택된 지점명과 계정과목으로 레코드 필터링
+        filtered_records = filter_records(selected_branch, selected_account_title, start_date, end_date)
         fetched_data = []
         for record in filtered_records:
             fetched_record = db.get(record["key"])
@@ -318,4 +300,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
